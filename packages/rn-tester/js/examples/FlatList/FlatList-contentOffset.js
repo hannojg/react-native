@@ -15,8 +15,8 @@ import { genItemData, getItemLayout, ItemComponent } from '../../components/List
 
 import * as React from 'react';
 
-const offsetToItemIndex = 43;
-const DATA = genItemData(100);
+const offsetToItemIndex = 15;
+const DATA = genItemData(30);
 
 export function FlatList_contentOffset(): React.Node {
   const [data, setData] = React.useState(DATA);
@@ -30,8 +30,7 @@ export function FlatList_contentOffset(): React.Node {
         getItemLayout={(data, index) => getItemLayout(data, index, false)}
         contentOffset={{
           x: 0,
-          // + 6: the item should roughly be centered
-          y: getItemLayout(data, offsetToItemIndex + 6, false).offset,
+          y: getItemLayout(data, offsetToItemIndex, false).offset,
         }}
         renderItem={({ item }) =>
         <ItemComponent
