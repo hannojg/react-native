@@ -19,7 +19,7 @@ const {
   TouchableOpacity,
 } = require('react-native');
 
-const NUM_ITEMS = 20;
+const NUM_ITEMS = 30;
 
 class ScrollViewSimpleExample extends React.Component<{...}> {
   makeItems: (nItems: number, styles: any) => Array<any> = (
@@ -102,7 +102,14 @@ class ScrollViewSimpleExample extends React.Component<{...}> {
     );
 
     const verticalScrollView = (
-      <ScrollView style={styles.verticalScrollView}>{items}</ScrollView>
+      <ScrollView
+        style={styles.verticalScrollView}
+        contentOffset={{
+          x: 0,
+          y: 1500,
+        }}>
+          {items}
+      </ScrollView>
     );
 
     return verticalScrollView;
