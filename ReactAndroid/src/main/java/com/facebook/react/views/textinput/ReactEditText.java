@@ -563,7 +563,7 @@ public class ReactEditText extends AppCompatEditText
 
   // VisibleForTesting from {@link TextInputEventsTestCase}.
   public void maybeSetText(ReactTextUpdate reactTextUpdate) {
-    if (isSecureText() && TextUtils.equals(getText(), reactTextUpdate.getText())) {
+    if (TextUtils.equals(getText(), reactTextUpdate.getText())) {
       return;
     }
 
