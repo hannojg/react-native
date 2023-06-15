@@ -1847,7 +1847,8 @@ export default class VirtualizedList extends StateSafePureComponent<
 
 const styles = StyleSheet.create({
   verticallyInverted: {
-    transform: [{scaleY: -1}],
+    // It's important to invert the Y AND X axis to prevent a react native issue that can lead to ANRs on android 13
+    transform: [{scaleX: -1}, {scaleY: -1}],
   },
   horizontallyInverted: {
     transform: [{scaleX: -1}],

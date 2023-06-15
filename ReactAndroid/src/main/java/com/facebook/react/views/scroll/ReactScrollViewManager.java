@@ -8,6 +8,7 @@
 package com.facebook.react.views.scroll;
 
 import android.graphics.Color;
+import android.util.Log;
 import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
@@ -16,6 +17,7 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.RetryableMountingLayerException;
 import com.facebook.react.common.MapBuilder;
 import com.facebook.react.module.annotations.ReactModule;
+import com.facebook.react.modules.i18nmanager.I18nUtil;
 import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.PointerEvents;
 import com.facebook.react.uimanager.ReactClippingViewGroupHelper;
@@ -374,5 +376,23 @@ public class ReactScrollViewManager extends ViewGroupManager<ReactScrollView>
   @ReactProp(name = "scrollEventThrottle")
   public void setScrollEventThrottle(ReactScrollView view, int scrollEventThrottle) {
     view.setScrollEventThrottle(scrollEventThrottle);
+  }
+
+  @ReactProp(name = "inverted")
+  public void setInverted(ReactScrollView view, boolean inverted) {
+    // Usually when inverting the scroll view we are using scaleY: -1 on the list
+    // and on the parent container. HOWEVER, starting from android API 33 there is
+    // a bug that can cause an ANR due to that. Thus we are using different transform
+    // commands to circumvent the ANR. This however causes the vertical scrollbar to
+    // be on the wrong side. Thus we are moving it to the other side, when the list
+    // is inverted.
+    // See also:
+    //  - https://github.com/facebook/react-native/issues/35350
+    //  - https://issuetracker.google.com/u/1/issues/287304310
+    if (inverted) {
+      view.setVerticalScrollbarPosition(View.SCROLLBAR_POSITION_LEFT);
+    } else {
+      view.setVerticalScrollbarPosition(View.SCROLLBAR_POSITION_DEFAULT);
+    }
   }
 }
