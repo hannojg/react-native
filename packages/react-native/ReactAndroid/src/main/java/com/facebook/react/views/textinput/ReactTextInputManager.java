@@ -1120,7 +1120,12 @@ public class ReactTextInputManager extends BaseViewManager<ReactEditText, Layout
               mSurfaceId,
               mEditText.getId(),
               s.toString(),
-              mEditText.incrementAndGetEventCounter()));
+              mEditText.incrementAndGetEventCounter(),
+              start,
+              count,
+              before
+          )
+      );
       FLog.e("ReactTextInputManager", String.format("Dispatched event to JS with text '%s'", s));
     }
 
@@ -1392,6 +1397,7 @@ public class ReactTextInputManager extends BaseViewManager<ReactEditText, Layout
     int currentJustificationMode =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.O ? 0 : view.getJustificationMode();
 
+    FLog.e("ReactTextInputManager", String.format("getReactTextUpdate text: '%s'", spanned.toString()));
     return ReactTextUpdate.buildReactTextUpdateFromState(
         spanned,
         state.getInt(TX_STATE_KEY_MOST_RECENT_EVENT_COUNT),
