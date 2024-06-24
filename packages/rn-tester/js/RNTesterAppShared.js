@@ -35,14 +35,14 @@ const App = () => {
         log(`Clearing! Text: '${text}'. New text: ''.`);
 
         textInputRef.current.clear();
-        // setText('');
+        setText('');
     };
 
     log(`Rendering TextInput with value = '${text}'`);
 
-    // if (shouldSlowDown) {
-    //     log(`fib(N): ${fibonacci(N)}`);
-    // }
+    if (shouldSlowDown) {
+        log(`fib(N): ${fibonacci(N)}`);
+    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -50,9 +50,18 @@ const App = () => {
                 ref={textInputRef}
                 style={styles.textInput}
                 value={text}
-                onChangeText={(newText) => {
-                    log(`Text changed! Text: '${text}'. New text: '${newText}'`);
-                    setText(newText);
+                onChange={({nativeEvent}) => {
+                    setText((previousText) => {
+                        const {count, start, before, text: fullNewText, eventCount} = nativeEvent;
+                        // This method is called to notify you that, within s, the count characters beginning at start have just
+                        // replaced old text that had length before. It is an error to attempt to make changes to s from this callback.
+                        const newText = fullNewText.substring(start, start + count);
+                        // Replace newText in the original text:
+                        const updatedText = previousText.substring(0, start) + newText + previousText.substring(start + before);
+
+                        console.log('setting text state to:', updatedText, eventCount);
+                        return updatedText;
+                    });
                 }}
                 placeholder="Type something..."
             />
