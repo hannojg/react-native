@@ -1160,7 +1160,7 @@ function InternalTextInput(props: Props): React.Node {
         selection?.start ?? -1,
         selection?.end ?? -1,
       );
-    }
+      console.log('JS -> Native setText:', text); }
   }, [
     mostRecentEventCount,
     inputRef,
@@ -1266,6 +1266,7 @@ function InternalTextInput(props: Props): React.Node {
       return;
     }
 
+    console.log('native -> JS onChange:', currentText, { eventCount: event.nativeEvent.eventCount });
     setLastNativeText(currentText);
     // This must happen last, after we call setLastNativeText.
     // Different ordering can cause bugs when editing AndroidTextInputs

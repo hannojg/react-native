@@ -315,6 +315,7 @@ public class ReactTextInputManager extends BaseViewManager<ReactEditText, Layout
 
         if (!args.isNull(1)) {
           String text = args.getString(1);
+          FLog.e("ReactEditText", "receive command text: '"+text+"'");
           reactEditText.maybeSetTextFromJS(getReactTextUpdate(text, mostRecentEventCount));
         }
         reactEditText.maybeSetSelection(mostRecentEventCount, start, end);
@@ -326,6 +327,7 @@ public class ReactTextInputManager extends BaseViewManager<ReactEditText, Layout
     SpannableStringBuilder sb = new SpannableStringBuilder();
     sb.append(TextTransform.apply(text, TextTransform.UNSET));
 
+    FLog.e("ReactEditText", "getReactTextUpdate: '"+sb.toString()+"'");
     return new ReactTextUpdate(
         sb, mostRecentEventCount, false, 0, 0, 0, 0, Gravity.NO_GRAVITY, 0, 0);
   }
@@ -1118,7 +1120,13 @@ public class ReactTextInputManager extends BaseViewManager<ReactEditText, Layout
               mSurfaceId,
               mEditText.getId(),
               s.toString(),
-              mEditText.incrementAndGetEventCounter()));
+              mEditText.incrementAndGetEventCounter(),
+              start,
+              count,
+              before
+          )
+      );
+      FLog.e("ReactTextInputManager", String.format("Dispatched event to JS with text '%s'", s));
     }
 
     @Override
@@ -1356,6 +1364,8 @@ public class ReactTextInputManager extends BaseViewManager<ReactEditText, Layout
       view.setPadding(0, 0, 0, 0);
     }
 
+    // TODO: why do we do that here? The wrapper is already a ref taken from the view ...
+    // Ah, we do that here, because we receive the state wrapper as parameter
     view.setStateWrapper(stateWrapper);
 
     MapBuffer stateMapBuffer = stateWrapper.getStateDataMapBuffer();
@@ -1387,6 +1397,7 @@ public class ReactTextInputManager extends BaseViewManager<ReactEditText, Layout
     int currentJustificationMode =
         Build.VERSION.SDK_INT < Build.VERSION_CODES.O ? 0 : view.getJustificationMode();
 
+    FLog.e("ReactTextInputManager", String.format("getReactTextUpdate text: '%s'", spanned.toString()));
     return ReactTextUpdate.buildReactTextUpdateFromState(
         spanned,
         state.getInt(TX_STATE_KEY_MOST_RECENT_EVENT_COUNT),

@@ -57,6 +57,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
    */
   BOOL _comingFromJS;
   BOOL _didMoveToWindow;
+  
+  NSInteger changeStart;
+  NSInteger changeBefore;
+  NSInteger changeCount;
 }
 
 #pragma mark - UIView overrides
@@ -327,6 +331,10 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
 - (NSString *)textInputShouldChangeText:(NSString *)text inRange:(NSRange)range
 {
   const auto &props = static_cast<const TextInputProps &>(*_props);
+  
+  changeStart = range.location;
+  changeBefore = range.length;
+  changeCount = text.length;
 
   if (!_backedTextInputView.textWasPasted) {
     if (_eventEmitter) {
@@ -575,6 +583,9 @@ static NSSet<NSNumber *> *returnKeyTypesSet;
   return {
       .text = RCTStringFromNSString(_backedTextInputView.attributedText.string),
       .selectionRange = [self _selectionRange],
+      .count = static_cast<int>(changeCount),
+      .before = static_cast<int>(changeBefore),
+      .start = static_cast<int>(changeStart),
       .eventCount = static_cast<int>(_mostRecentEventCount),
       .contentOffset = RCTPointFromCGPoint(_backedTextInputView.contentOffset),
       .contentInset = RCTEdgeInsetsFromUIEdgeInsets(_backedTextInputView.contentInset),

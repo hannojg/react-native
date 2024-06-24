@@ -66,7 +66,7 @@ import javax.annotation.concurrent.NotThreadSafe;
 public class NativeViewHierarchyManager {
 
   private static final String TAG = NativeViewHierarchyManager.class.getSimpleName();
-  private final boolean DEBUG_MODE = ReactBuildConfig.DEBUG && false;
+  private final boolean DEBUG_MODE = ReactBuildConfig.DEBUG && true;
 
   private final SparseArray<View> mTagsToViews;
   private final SparseArray<ViewManager> mTagsToViewManagers;

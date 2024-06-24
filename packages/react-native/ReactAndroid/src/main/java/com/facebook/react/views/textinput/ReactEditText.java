@@ -27,6 +27,7 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.KeyListener;
 import android.text.method.QwertyKeyListener;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.Gravity;
@@ -87,7 +88,7 @@ public class ReactEditText extends AppCompatEditText {
 
   private final InputMethodManager mInputMethodManager;
   private final String TAG = ReactEditText.class.getSimpleName();
-  public static final boolean DEBUG_MODE = ReactBuildConfig.DEBUG && false;
+  public static final boolean DEBUG_MODE = ReactBuildConfig.DEBUG && true;
 
   // This flag is set to true when we set the text of the EditText explicitly. In that case, no
   // *TextChanged events should be triggered. This is less expensive than removing the text
@@ -624,12 +625,14 @@ public class ReactEditText extends AppCompatEditText {
   }
 
   public void maybeSetTextFromJS(ReactTextUpdate reactTextUpdate) {
+    FLog.e(TAG, "maybeSetTextFromJS text: '" + reactTextUpdate.getText() + "'");
     mIsSettingTextFromJS = true;
     maybeSetText(reactTextUpdate);
     mIsSettingTextFromJS = false;
   }
 
   public void maybeSetTextFromState(ReactTextUpdate reactTextUpdate) {
+    FLog.e(TAG, "maybeSetTextFromState text: '" + reactTextUpdate.getText() + "'");
     mIsSettingTextFromState = true;
     maybeSetText(reactTextUpdate);
     mIsSettingTextFromState = false;
@@ -646,7 +649,9 @@ public class ReactEditText extends AppCompatEditText {
     }
 
     // Only set the text if it is up to date.
-    if (!canUpdateWithEventCount(reactTextUpdate.getJsEventCounter())) {
+    int jsEventCounter = reactTextUpdate.getJsEventCounter();
+    if (!canUpdateWithEventCount(jsEventCounter)) {
+      Log.e(TAG, String.format("Skip update, js event counter is lagging behind. JS: %d native: %d", jsEventCounter, mNativeEventCount));
       return;
     }
 
