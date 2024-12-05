@@ -48,9 +48,10 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
 
   ConcreteComponentDescriptor(
       const ComponentDescriptorParameters& parameters,
-      RawPropsParser rawPropsParser = RawPropsParser())
+      std::unique_ptr<RawPropsParser> rawPropsParser =
+          std::make_unique<RawPropsParser>())
       : ComponentDescriptor(parameters, std::move(rawPropsParser)) {
-    rawPropsParser_.prepare<ConcreteProps>();
+    rawPropsParser_->prepare<ConcreteProps>();
   }
 
   ComponentHandle getComponentHandle() const override {
@@ -112,7 +113,7 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
       ShadowNodeT::filterRawProps(rawProps);
     }
 
-    rawProps.parse(rawPropsParser_);
+    rawProps.parse(*rawPropsParser_);
 
     // Use the new-style iterator
     // Note that we just check if `Props` has this flag set, no matter

@@ -12,7 +12,7 @@ namespace facebook::react {
 
 ComponentDescriptor::ComponentDescriptor(
     const ComponentDescriptorParameters& parameters,
-    RawPropsParser rawPropsParser)
+    std::unique_ptr<RawPropsParser> rawPropsParser)
     : eventDispatcher_(parameters.eventDispatcher),
       contextContainer_(parameters.contextContainer),
       flavor_(parameters.flavor),

@@ -46,7 +46,10 @@ class ComponentDescriptor {
    */
   using Flavor = std::shared_ptr<const void>;
 
-  ComponentDescriptor(const ComponentDescriptorParameters& parameters, RawPropsParser rawPropsParser = RawPropsParser());
+  ComponentDescriptor(
+      const ComponentDescriptorParameters& parameters,
+      std::unique_ptr<RawPropsParser> rawPropsParser =
+          std::make_unique<RawPropsParser>());
 
   virtual ~ComponentDescriptor() = default;
 
@@ -133,7 +136,7 @@ class ComponentDescriptor {
 
   EventDispatcher::Weak eventDispatcher_;
   std::shared_ptr<const ContextContainer> contextContainer_;
-  RawPropsParser rawPropsParser_;
+  std::unique_ptr<RawPropsParser> rawPropsParser_;
   Flavor flavor_;
 
   /*
