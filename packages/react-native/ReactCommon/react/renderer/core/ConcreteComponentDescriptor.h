@@ -49,7 +49,7 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
   ConcreteComponentDescriptor(
       const ComponentDescriptorParameters& parameters,
       RawPropsParser rawPropsParser = RawPropsParser())
-      : ComponentDescriptor(parameters, rawPropsParser) {
+      : ComponentDescriptor(parameters, std::move(rawPropsParser)) {
     rawPropsParser_.prepare<ConcreteProps>();
   }
 
