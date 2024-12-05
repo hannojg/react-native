@@ -27,7 +27,8 @@ class RawPropsParser final {
    * Default constructor.
    * To be used by `ConcreteComponentDescriptor` only.
    */
-  RawPropsParser() = default;
+  RawPropsParser(bool useRawJsiProps = false)
+      : useRawJsiProps_(useRawJsiProps) {};
 
   /*
    * To be used by `ConcreteComponentDescriptor` only.
@@ -56,6 +57,7 @@ class RawPropsParser final {
   template <class ShadowNodeT>
   friend class ConcreteComponentDescriptor;
   friend class RawProps;
+  bool useRawJsiProps_;
 
   /*
    * To be used by `RawProps` only.
