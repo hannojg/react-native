@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<4a219bb47b1b9d988a164bca19eb4fa9>>
+ * @generated SignedSource<<609b55df15ac72da5a3c14dde18a4814>>
  */
 
 /**
@@ -105,12 +105,6 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun enableFabricRenderer(): Boolean = accessor.enableFabricRenderer()
-
-  /**
-   * When the app is completely migrated to Fabric, set this flag to true to disable parts of Paper infrastructure that are not needed anymore but consume memory and CPU. Specifically, UIViewOperationQueue and EventDispatcherImpl will no longer work as they will not subscribe to ReactChoreographer for updates.
-   */
-  @JvmStatic
-  public fun enableFabricRendererExclusively(): Boolean = accessor.enableFabricRendererExclusively()
 
   /**
    * Synchronise the view command dispatching with mounting of new transaction
@@ -291,6 +285,12 @@ public object ReactNativeFeatureFlags {
    */
   @JvmStatic
   public fun useOptimizedEventBatchingOnAndroid(): Boolean = accessor.useOptimizedEventBatchingOnAndroid()
+
+  /**
+   * Instead of using folly::dynamic as internal representation in RawProps and RawValue, use jsi::Value
+   */
+  @JvmStatic
+  public fun useRawPropsJsiValue(): Boolean = accessor.useRawPropsJsiValue()
 
   /**
    * When enabled, cloning shadow nodes within react native will update the reference held by the current JS fiber tree.

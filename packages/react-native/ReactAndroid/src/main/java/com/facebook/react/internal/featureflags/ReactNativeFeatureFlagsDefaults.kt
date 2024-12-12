@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<70d951b2956759280afae4af8f9a2869>>
+ * @generated SignedSource<<04ac11c085b2880db40d44e431db42f2>>
  */
 
 /**
@@ -48,8 +48,6 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
   override fun enableFabricLogs(): Boolean = false
 
   override fun enableFabricRenderer(): Boolean = false
-
-  override fun enableFabricRendererExclusively(): Boolean = false
 
   override fun enableFixForViewCommandRace(): Boolean = false
 
@@ -111,7 +109,9 @@ public open class ReactNativeFeatureFlagsDefaults : ReactNativeFeatureFlagsProvi
 
   override fun useOptimizedEventBatchingOnAndroid(): Boolean = false
 
-  override fun useRuntimeShadowNodeReferenceUpdate(): Boolean = false
+  override fun useRawPropsJsiValue(): Boolean = false
+
+  override fun useRuntimeShadowNodeReferenceUpdate(): Boolean = true
 
   override fun useTurboModuleInterop(): Boolean = false
 

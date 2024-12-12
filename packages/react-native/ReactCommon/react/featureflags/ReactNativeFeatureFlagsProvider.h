@@ -4,7 +4,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- * @generated SignedSource<<e5d1c60102f7444332bd34627c02eddd>>
+ * @generated SignedSource<<8e43cf80f518df24cf78180c83bdb2cc>>
  */
 
 /**
@@ -38,7 +38,6 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool enableEventEmitterRetentionDuringGesturesOnAndroid() = 0;
   virtual bool enableFabricLogs() = 0;
   virtual bool enableFabricRenderer() = 0;
-  virtual bool enableFabricRendererExclusively() = 0;
   virtual bool enableFixForViewCommandRace() = 0;
   virtual bool enableGranularShadowTreeStateReconciliation() = 0;
   virtual bool enableIOSViewClipToPaddingBox() = 0;
@@ -69,6 +68,7 @@ class ReactNativeFeatureFlagsProvider {
   virtual bool useNativeViewConfigsInBridgelessMode() = 0;
   virtual bool useOptimisedViewPreallocationOnAndroid() = 0;
   virtual bool useOptimizedEventBatchingOnAndroid() = 0;
+  virtual bool useRawPropsJsiValue() = 0;
   virtual bool useRuntimeShadowNodeReferenceUpdate() = 0;
   virtual bool useTurboModuleInterop() = 0;
   virtual bool useTurboModules() = 0;

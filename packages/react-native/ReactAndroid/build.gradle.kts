@@ -191,7 +191,6 @@ val preparePrefab by
                       Pair("../ReactCommon/callinvoker/", ""),
                       Pair("../ReactCommon/cxxreact/", "cxxreact/"),
                       Pair("../ReactCommon/react/bridging/", "react/bridging/"),
-                      Pair("../ReactCommon/react/config/", "react/config/"),
                       Pair("../ReactCommon/react/nativemodule/core/", ""),
                       Pair("../ReactCommon/react/nativemodule/core/platform/android/", ""),
                       Pair(
@@ -396,13 +395,6 @@ val prepareGlog by
       outputDir.set(File(thirdPartyNdkDir, "glog"))
     }
 
-// Create Android native library module based on jsc from npm
-val prepareJSC by
-    tasks.registering(PrepareJSCTask::class) {
-      jscPackagePath.set(findNodeModulePath(projectDir, "jsc-android"))
-      outputDir = project.layout.buildDirectory.dir("third-party-ndk/jsc")
-    }
-
 val prepareKotlinBuildScriptModel by
     tasks.registering {
       // This task is run when Gradle Sync is running.
@@ -520,6 +512,7 @@ android {
     buildConfigField("boolean", "IS_INTERNAL_BUILD", "false")
     buildConfigField("int", "EXOPACKAGE_FLAGS", "0")
     buildConfigField("boolean", "UNSTABLE_ENABLE_FUSEBOX_RELEASE", "false")
+    buildConfigField("boolean", "ENABLE_PERFETTO", "false")
 
     resValue("integer", "react_native_dev_server_port", reactNativeDevServerPort())
 
@@ -577,7 +570,6 @@ android {
           prepareFolly,
           prepareGlog,
           prepareGtest,
-          prepareJSC,
           preparePrefab)
   tasks.getByName("generateCodegenSchemaFromJavaScript").dependsOn(buildCodegenCLI)
   prepareKotlinBuildScriptModel.dependsOn("preBuild")
@@ -664,9 +656,10 @@ dependencies {
   compileOnly(libs.javax.annotation.api)
   api(libs.javax.inject)
 
-  // It's up to the consumer to decide if hermes should be included or not.
-  // Therefore hermes-engine is a compileOnly dependency.
+  // It's up to the consumer to decide if hermes/jsc should be included or not.
+  // Therefore hermes-engine and jsc are compileOnly dependencies.
   compileOnly(project(":packages:react-native:ReactAndroid:hermes-engine"))
+  compileOnly(libs.jsc.android)
 
   testImplementation(libs.junit)
   testImplementation(libs.assertj)
