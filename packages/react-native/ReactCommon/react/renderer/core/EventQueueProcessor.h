@@ -17,21 +17,22 @@
 
 namespace facebook::react {
 
+template <typename TRawPropsParser = RawPropsParser>
 class EventQueueProcessor {
  public:
   EventQueueProcessor(
       EventPipe eventPipe,
       EventPipeConclusion eventPipeConclusion,
-      StatePipe statePipe,
+      StatePipe<TRawPropsParser> statePipe,
       std::weak_ptr<EventLogger> eventLogger);
 
   void flushEvents(jsi::Runtime& runtime, std::vector<RawEvent>&& events) const;
-  void flushStateUpdates(std::vector<StateUpdate>&& states) const;
+  void flushStateUpdates(std::vector<StateUpdate<TRawPropsParser>>&& states) const;
 
  private:
   const EventPipe eventPipe_;
   const EventPipeConclusion eventPipeConclusion_;
-  const StatePipe statePipe_;
+  const StatePipe<TRawPropsParser> statePipe_;
   const std::weak_ptr<EventLogger> eventLogger_;
 
   mutable bool hasContinuousEventStarted_{false};

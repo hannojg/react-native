@@ -23,10 +23,11 @@ namespace facebook::react {
  * Event Queue synchronized with given Event Beat and dispatching event
  * using given Event Pipe.
  */
+template <typename TRawPropsParser = RawPropsParser>
 class EventQueue {
  public:
   EventQueue(
-      EventQueueProcessor eventProcessor,
+      EventQueueProcessor<TRawPropsParser> eventProcessor,
       std::unique_ptr<EventBeat> eventBeat);
 
   /*
@@ -46,7 +47,7 @@ class EventQueue {
    * Enqueues and (probably later) dispatch a given state update.
    * Can be called on any thread.
    */
-  void enqueueStateUpdate(StateUpdate&& stateUpdate) const;
+  void enqueueStateUpdate(StateUpdate<TRawPropsParser>&& stateUpdate) const;
 
   /*
    * Experimental API exposed to support EventEmitter::experimental_flushSync.
@@ -65,12 +66,12 @@ class EventQueue {
   void flushEvents(jsi::Runtime& runtime) const;
   void flushStateUpdates() const;
 
-  EventQueueProcessor eventProcessor_;
+  EventQueueProcessor<TRawPropsParser> eventProcessor_;
 
   const std::unique_ptr<EventBeat> eventBeat_;
   // Thread-safe, protected by `queueMutex_`.
   mutable std::vector<RawEvent> eventQueue_;
-  mutable std::vector<StateUpdate> stateUpdateQueue_;
+  mutable std::vector<StateUpdate<TRawPropsParser>> stateUpdateQueue_;
   mutable std::mutex queueMutex_;
 };
 

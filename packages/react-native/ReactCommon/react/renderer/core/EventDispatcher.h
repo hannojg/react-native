@@ -25,15 +25,16 @@ class RuntimeScheduler;
  * Represents event-delivery infrastructure.
  * Particular `EventEmitter` clases use this for sending events.
  */
+template <typename TRawPropsParser = RawPropsParser>
 class EventDispatcher {
  public:
   using Shared = std::shared_ptr<const EventDispatcher>;
   using Weak = std::weak_ptr<const EventDispatcher>;
 
   EventDispatcher(
-      const EventQueueProcessor& eventProcessor,
+      const EventQueueProcessor<TRawPropsParser>& eventProcessor,
       std::unique_ptr<EventBeat> eventBeat,
-      StatePipe statePipe,
+      StatePipe<TRawPropsParser> statePipe,
       std::weak_ptr<EventLogger> eventLogger);
 
   /*
@@ -56,7 +57,7 @@ class EventDispatcher {
   /*
    * Dispatches a state update with given priority.
    */
-  void dispatchStateUpdate(StateUpdate&& stateUpdate) const;
+  void dispatchStateUpdate(StateUpdate<TRawPropsParser>&& stateUpdate) const;
 
 #pragma mark - Event listeners
   /*
@@ -71,8 +72,8 @@ class EventDispatcher {
       const std::shared_ptr<const EventListener>& listener) const;
 
  private:
-  EventQueue eventQueue_;
-  const StatePipe statePipe_;
+  EventQueue<TRawPropsParser> eventQueue_;
+  const StatePipe<TRawPropsParser> statePipe_;
 
   mutable EventListenerContainer eventListeners_;
   const std::weak_ptr<EventLogger> eventLogger_;

@@ -13,6 +13,7 @@
 
 namespace facebook::react {
 
-using StatePipe = std::function<void(const StateUpdate& stateUpdate)>;
+template <typename TRawPropsParser = RawPropsParser>
+using StatePipe = std::function<void(const StateUpdate<TRawPropsParser>& stateUpdate)>;
 
 } // namespace facebook::react

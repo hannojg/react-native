@@ -24,6 +24,7 @@
 
 namespace facebook::react {
 
+template <typename TRawPropsParser>
 class ComponentDescriptor;
 struct ShadowNodeFragment;
 struct ShadowNodeWrapper;

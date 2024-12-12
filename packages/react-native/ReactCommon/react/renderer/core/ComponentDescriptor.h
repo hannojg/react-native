@@ -19,10 +19,13 @@
 namespace facebook::react {
 
 class ComponentDescriptorParameters;
+template <typename TRawPropsParser>
 class ComponentDescriptor;
 class ContextContainer;
 
-using SharedComponentDescriptor = std::shared_ptr<const ComponentDescriptor>;
+template <typename TRawPropsParser = RawPropsParser>
+using SharedComponentDescriptor =
+    std::shared_ptr<const ComponentDescriptor<TRawPropsParser>>;
 
 /*
  * Abstract class defining an interface of `ComponentDescriptor`.
@@ -30,6 +33,7 @@ using SharedComponentDescriptor = std::shared_ptr<const ComponentDescriptor>;
  * defines (customizes) basic operations with particular kind of
  * `ShadowNode`s (such as creating, cloning, props and children managing).
  */
+template <typename TRawPropsParser = RawPropsParser>
 class ComponentDescriptor {
  public:
   using Shared = std::shared_ptr<const ComponentDescriptor>;
@@ -48,7 +52,7 @@ class ComponentDescriptor {
 
   ComponentDescriptor(
       const ComponentDescriptorParameters& parameters,
-      RawPropsParser&& rawPropsParser = {});
+      TRawPropsParser&& rawPropsParser = {});
 
   virtual ~ComponentDescriptor() = default;
 
@@ -136,7 +140,7 @@ class ComponentDescriptor {
   EventDispatcher::Weak eventDispatcher_;
   std::shared_ptr<const ContextContainer> contextContainer_;
   Flavor flavor_;
-  RawPropsParser rawPropsParser_;
+  TRawPropsParser rawPropsParser_;
 
   /*
    * Called immediately after `ShadowNode` is created, cloned or state is
@@ -162,7 +166,7 @@ class ComponentDescriptorParameters {
  public:
   EventDispatcher::Weak eventDispatcher;
   ContextContainer::Shared contextContainer;
-  ComponentDescriptor::Flavor flavor;
+  ComponentDescriptor<>::Flavor flavor;
 };
 
 } // namespace facebook::react

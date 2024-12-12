@@ -28,8 +28,9 @@ namespace facebook::react {
  * Use your `ShadowNode` type as a template argument and override any methods
  * if necessary.
  */
-template <typename ShadowNodeT>
-class ConcreteComponentDescriptor : public ComponentDescriptor {
+template <typename ShadowNodeT, typename TRawPropsParser = RawPropsParser>
+class ConcreteComponentDescriptor
+    : public ComponentDescriptor<TRawPropsParser> {
   static_assert(
       std::is_base_of<ShadowNode, ShadowNodeT>::value,
       "ShadowNodeT must be a descendant of ShadowNode");
@@ -48,9 +49,11 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
 
   ConcreteComponentDescriptor(
       const ComponentDescriptorParameters& parameters,
-      RawPropsParser&& rawPropsParser = {})
-      : ComponentDescriptor(parameters, std::move(rawPropsParser)) {
-    rawPropsParser_.prepare<ConcreteProps>();
+      TRawPropsParser&& rawPropsParser = {})
+      : ComponentDescriptor<TRawPropsParser>(
+            parameters,
+            std::move(rawPropsParser)) {
+    this->rawPropsParser_.template prepare<ConcreteProps>();
   }
 
   ComponentHandle getComponentHandle() const override {
@@ -112,7 +115,7 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
       ShadowNodeT::filterRawProps(rawProps);
     }
 
-    rawProps.parse(rawPropsParser_);
+    rawProps.parse(this->rawPropsParser_);
 
     // Use the new-style iterator
     // Note that we just check if `Props` has this flag set, no matter
@@ -173,9 +176,9 @@ class ConcreteComponentDescriptor : public ComponentDescriptor {
     auto eventEmitter = std::make_shared<const ConcreteEventEmitter>(
         std::make_shared<EventTarget>(
             fragment.instanceHandle, fragment.surfaceId),
-        eventDispatcher_);
+        this->eventDispatcher_);
     return std::make_shared<ShadowNodeFamily>(
-        fragment, std::move(eventEmitter), eventDispatcher_, *this);
+        fragment, std::move(eventEmitter), this->eventDispatcher_, *this);
   }
 
  protected:

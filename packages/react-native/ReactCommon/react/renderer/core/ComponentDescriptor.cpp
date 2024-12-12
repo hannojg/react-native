@@ -10,16 +10,18 @@
 
 namespace facebook::react {
 
-ComponentDescriptor::ComponentDescriptor(
+template <typename TRawPropsParser>
+ComponentDescriptor<TRawPropsParser>::ComponentDescriptor(
     const ComponentDescriptorParameters& parameters,
-    RawPropsParser&& rawPropsParser)
+    TRawPropsParser&& rawPropsParser)
     : eventDispatcher_(parameters.eventDispatcher),
       contextContainer_(parameters.contextContainer),
       flavor_(parameters.flavor),
       rawPropsParser_(std::move(rawPropsParser)) {}
 
+template <typename TRawPropsParser>
 const std::shared_ptr<const ContextContainer>&
-ComponentDescriptor::getContextContainer() const {
+ComponentDescriptor<TRawPropsParser>::getContextContainer() const {
   return contextContainer_;
 }
 

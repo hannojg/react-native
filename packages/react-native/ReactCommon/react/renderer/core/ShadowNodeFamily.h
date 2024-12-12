@@ -13,9 +13,11 @@
 #include <react/renderer/core/EventEmitter.h>
 #include <react/renderer/core/InstanceHandle.h>
 #include <react/renderer/core/ReactPrimitives.h>
+#include <react/renderer/core/RawPropsParser.h>
 
 namespace facebook::react {
 
+template <typename TRawPropsParser>
 class ComponentDescriptor;
 class ShadowNode;
 class State;
@@ -39,6 +41,7 @@ struct ShadowNodeFamilyFragment {
  * Represents all things that shadow nodes from the same family have in common.
  * To be used inside `ShadowNode` class *only*.
  */
+template <typename TRawPropsParser = RawPropsParser>
 class ShadowNodeFamily final {
  public:
   using Shared = std::shared_ptr<const ShadowNodeFamily>;
@@ -48,11 +51,17 @@ class ShadowNodeFamily final {
       std::reference_wrapper<const ShadowNode> /* parentNode */,
       int /* childIndex */>>;
 
-  ShadowNodeFamily(
-      const ShadowNodeFamilyFragment& fragment,
-      SharedEventEmitter eventEmitter,
-      EventDispatcher::Weak eventDispatcher,
-      const ComponentDescriptor& componentDescriptor);
+    ShadowNodeFamily(
+            const ShadowNodeFamilyFragment& fragment,
+            SharedEventEmitter eventEmitter,
+            EventDispatcher::Weak eventDispatcher,
+            const ComponentDescriptor<TRawPropsParser>& componentDescriptor);
+
+//  ShadowNodeFamily(
+//      const ShadowNodeFamilyFragment& fragment,
+//      SharedEventEmitter eventEmitter,
+//      EventDispatcher::Weak eventDispatcher,
+//      const ComponentDescriptor& componentDescriptor);
 
   /*
    * Sets the parent.
@@ -70,7 +79,7 @@ class ShadowNodeFamily final {
   /*
    * Returns a concrete `ComponentDescriptor` that manages nodes of this type.
    */
-  const ComponentDescriptor& getComponentDescriptor() const;
+  const ComponentDescriptor<TRawPropsParser>& getComponentDescriptor() const;
 
   /*
    * Returns a list of all ancestors of the node relative to the given ancestor.
@@ -171,7 +180,7 @@ class ShadowNodeFamily final {
    * Reference to a concrete `ComponentDescriptor` that manages nodes of this
    * type.
    */
-  const ComponentDescriptor& componentDescriptor_;
+  const ComponentDescriptor<TRawPropsParser>& componentDescriptor_;
 
   /*
    * ComponentHandle and ComponentName must be stored (cached) inside the object

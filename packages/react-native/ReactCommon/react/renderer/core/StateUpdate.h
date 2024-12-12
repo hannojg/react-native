@@ -10,12 +10,14 @@
 #include <functional>
 
 #include <react/renderer/core/StateData.h>
+#include <react/renderer/core/RawPropsParser.h>
 
 namespace facebook::react {
 
 class ShadowNodeFamily;
 using SharedShadowNodeFamily = std::shared_ptr<const ShadowNodeFamily>;
 
+template <typename TRawPropsParser = RawPropsParser>
 class StateUpdate {
  public:
   using Callback =
