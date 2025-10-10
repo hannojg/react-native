@@ -12,6 +12,7 @@ import android.content.Context
 import android.content.Intent
 import android.nfc.NfcAdapter
 import android.os.Bundle
+import android.util.Log
 import com.facebook.common.logging.FLog
 import com.facebook.infer.annotation.Assertions
 import com.facebook.infer.annotation.ThreadConfined
@@ -66,6 +67,7 @@ import com.facebook.react.uimanager.events.BlackHoleEventDispatcher
 import com.facebook.react.uimanager.events.EventDispatcher
 import com.facebook.react.views.imagehelper.ResourceDrawableIdHelper
 import java.lang.ref.WeakReference
+import java.util.WeakHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
@@ -137,6 +139,7 @@ public class ReactHostImpl(
   private val reactLifecycleStateManager = ReactLifecycleStateManager(stateTracker)
   private var memoryPressureListener: MemoryPressureListener? = null
   private var defaultHardwareBackBtnHandler: DefaultHardwareBackBtnHandler? = null
+  private val activeActivitiesMap = WeakHashMap<Activity, Boolean>();
 
   private val reactInstanceEventListeners: MutableList<ReactInstanceEventListener> =
       CopyOnWriteArrayList()
@@ -240,6 +243,11 @@ public class ReactHostImpl(
   @ThreadConfined(ThreadConfined.UI)
   override fun onHostResume(activity: Activity?) {
     stateTracker.enterState("onHostResume(activity)")
+    Log.d("ReactHost", "Resuming activity: $activity, prev currentActivity: $currentActivity")
+
+    if (activity != null) {
+      activeActivitiesMap[activity] = true
+    }
 
     currentActivity = activity
 
@@ -259,25 +267,18 @@ public class ReactHostImpl(
     val method = "onHostPause(activity)"
     stateTracker.enterState(method)
 
-    val currentActivity = this.currentActivity
-    if (currentActivity != null) {
-      val isSameActivity = activity === currentActivity
-      if (!isSameActivity) {
-        val currentActivityClass = currentActivity.javaClass.simpleName
-        val activityClass = if (activity == null) "null" else activity.javaClass.simpleName
-        val isNotSameActivityMessage =
-            "Pausing an activity that is not the current activity, this is incorrect! Current activity: $currentActivityClass Paused activity: $activityClass"
-        if (ReactNativeFeatureFlags.skipActivityIdentityAssertionOnHostPause()) {
-          FLog.w(TAG, method, isNotSameActivityMessage)
-        } else {
-          Assertions.assertCondition(isSameActivity, isNotSameActivityMessage)
-        }
+    Log.d("ReactHost", "Pausing activity: $activity, currentActivity: $currentActivity")
+    if (activity != null) {
+      activeActivitiesMap.remove(activity)
+      if (activeActivitiesMap.size > 0) {
+        Log.d("ReactHost", "Not pausing because there are still active activities: #${activeActivitiesMap.size}")
+        return;
       }
     }
 
     maybeEnableDevSupport(false)
     defaultHardwareBackBtnHandler = null
-    reactLifecycleStateManager.moveToOnHostPause(currentReactContext, currentActivity)
+    reactLifecycleStateManager.moveToOnHostPause(currentReactContext, activity)
   }
 
   /** To be called when the host activity is paused. */
