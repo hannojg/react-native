@@ -12,7 +12,6 @@ import android.content.Context
 import android.content.Intent
 import android.nfc.NfcAdapter
 import android.os.Bundle
-import android.util.Log
 import com.facebook.common.logging.FLog
 import com.facebook.infer.annotation.Assertions
 import com.facebook.infer.annotation.ThreadConfined
@@ -243,7 +242,6 @@ public class ReactHostImpl(
   @ThreadConfined(ThreadConfined.UI)
   override fun onHostResume(activity: Activity?) {
     stateTracker.enterState("onHostResume(activity)")
-    Log.d("ReactHost", "Resuming activity: $activity, prev currentActivity: $currentActivity")
 
     if (activity != null) {
       activeActivitiesMap[activity] = true
@@ -267,12 +265,11 @@ public class ReactHostImpl(
     val method = "onHostPause(activity)"
     stateTracker.enterState(method)
 
-    Log.d("ReactHost", "Pausing activity: $activity, currentActivity: $currentActivity")
     if (activity != null) {
       activeActivitiesMap.remove(activity)
       if (activeActivitiesMap.size > 0) {
-        Log.d("ReactHost", "Not pausing because there are still active activities: #${activeActivitiesMap.size}")
-        return;
+        FLog.w(TAG, "Called $method by activity $activity but there are still active activities, not pausing yet.")
+        return
       }
     }
 
