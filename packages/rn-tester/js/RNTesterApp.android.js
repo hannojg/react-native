@@ -9,8 +9,10 @@
  */
 
 import RNTesterApp from './RNTesterAppShared';
+import RNTesterShareApp from './RNTesterShareApp.android';
 import {AppRegistry} from 'react-native';
 
 AppRegistry.registerComponent('RNTesterApp', () => RNTesterApp);
+AppRegistry.registerComponent('RNTesterShareApp', () => RNTesterShareApp);
 
 module.exports = RNTesterApp;
