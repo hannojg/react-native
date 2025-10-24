@@ -1363,7 +1363,8 @@ static void calculateShadowViewMutations(
 
 ShadowViewMutation::List calculateShadowViewMutations(
     const ShadowNode& oldRootShadowNode,
-    const ShadowNode& newRootShadowNode) {
+    const ShadowNode& newRootShadowNode,
+    int64_t newShadowTreeRevisionNumber) {
   TraceSection s("calculateShadowViewMutations");
 
   // Root shadow nodes must be belong the same family.

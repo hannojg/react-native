@@ -19,6 +19,7 @@ namespace facebook::react {
  */
 ShadowViewMutation::List calculateShadowViewMutations(
     const ShadowNode& oldRootShadowNode,
-    const ShadowNode& newRootShadowNode);
+    const ShadowNode& newRootShadowNode,
+    int64_t newShadowTreeRevisionNumber);
 
 } // namespace facebook::react

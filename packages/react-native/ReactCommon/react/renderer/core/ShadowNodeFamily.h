@@ -33,6 +33,7 @@ struct ShadowNodeFamilyFragment {
   const Tag tag;
   const SurfaceId surfaceId;
   const std::shared_ptr<const InstanceHandle> instanceHandle;
+  const int64_t revision;
 };
 
 /*
@@ -128,6 +129,10 @@ class ShadowNodeFamily final : public jsi::NativeState {
   InstanceHandle::Shared getInstanceHandle() const;
   void setInstanceHandle(InstanceHandle::Shared& instanceHandle) const;
 
+  void setFirstMountRevision(int64_t revision) {
+    firstMountRevision = revision;
+  }
+
   /**
    * Override destructor to call onUnmountedFamilyDestroyedCallback() for
    * ShadowViews that were preallocated but never mounted on the screen.
@@ -167,6 +172,8 @@ class ShadowNodeFamily final : public jsi::NativeState {
    * Weak reference to the React instance handle
    */
   mutable InstanceHandle::Shared instanceHandle_;
+
+  int64_t firstMountRevision{-1};
 
   /*
    * `EventEmitter` associated with all nodes of the family.

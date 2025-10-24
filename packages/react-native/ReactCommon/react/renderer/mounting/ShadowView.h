@@ -30,6 +30,7 @@ struct ShadowView final {
    * Constructs a `ShadowView` from given `ShadowNode`.
    */
   explicit ShadowView(const ShadowNode& shadowNode);
+//  explicit ShadowView(const ShadowNode& shadowNode, int64_t newShadowTreeRevisionNumber);
 
   ShadowView& operator=(const ShadowView& other) = default;
   ShadowView& operator=(ShadowView&& other) = default;
@@ -46,6 +47,8 @@ struct ShadowView final {
   EventEmitter::Shared eventEmitter{};
   LayoutMetrics layoutMetrics{EmptyLayoutMetrics};
   State::Shared state{};
+
+  int64_t addedInRevision{-1};
 };
 
 #if RN_DEBUG_STRING_CONVERTIBLE

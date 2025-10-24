@@ -31,6 +31,11 @@ ShadowView::ShadowView(const ShadowNode& shadowNode)
       layoutMetrics(layoutMetricsFromShadowNode(shadowNode)),
       state(shadowNode.getState()) {}
 
+ShadowView::ShadowView(const facebook::react::ShadowNode &shadowNode,
+                       int64_t newShadowTreeRevisionNumber) : ShadowView(shadowNode) {
+    addedInRevision = newShadowTreeRevisionNumber;
+}
+
 bool ShadowView::operator==(const ShadowView& rhs) const {
   return std::tie(
              this->surfaceId,

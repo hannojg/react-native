@@ -53,7 +53,7 @@ static void sliceChildShadowNodeViewPairsRecursively(
     ViewNodePairScope& scope,
     Point layoutOffset,
     const ShadowNode& shadowNode,
-    const CullingContext& cullingContext) {
+    const CullingContext& cullingContext,) {
   for (const auto& sharedChildShadowNode : shadowNode.getChildren()) {
     auto& childShadowNode = *sharedChildShadowNode;
     // T153547836: Disabled on Android because the mounting infrastructure

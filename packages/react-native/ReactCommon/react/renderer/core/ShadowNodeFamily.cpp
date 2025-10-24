@@ -28,6 +28,7 @@ ShadowNodeFamily::ShadowNodeFamily(
       tag_(fragment.tag),
       surfaceId_(fragment.surfaceId),
       instanceHandle_(fragment.instanceHandle),
+      firstMountRevision(fragment.revision),
       eventEmitter_(std::move(eventEmitter)),
       componentDescriptor_(componentDescriptor),
       componentHandle_(componentDescriptor.getComponentHandle()),
