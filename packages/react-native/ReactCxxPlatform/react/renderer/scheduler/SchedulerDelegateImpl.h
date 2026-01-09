@@ -7,8 +7,12 @@
 
 #pragma once
 
+#include <react/renderer/mounting/MountingTransaction.h>
 #include <react/renderer/scheduler/SchedulerDelegate.h>
 #include <react/renderer/uimanager/IMountingManager.h>
+#include <functional>
+#include <mutex>
+#include <vector>
 
 namespace facebook::react {
 
@@ -20,10 +24,18 @@ class SchedulerDelegateImpl : public SchedulerDelegate {
 
   ~SchedulerDelegateImpl() noexcept override = default;
 
-  SchedulerDelegateImpl(SchedulerDelegateImpl &&) noexcept = default;
-  SchedulerDelegateImpl &operator=(SchedulerDelegateImpl &&) noexcept = default;
+  // Cannot be moved or copied due to mutex member
+  SchedulerDelegateImpl(SchedulerDelegateImpl &&) noexcept = delete;
+  SchedulerDelegateImpl &operator=(SchedulerDelegateImpl &&) noexcept = delete;
   SchedulerDelegateImpl(const SchedulerDelegateImpl &) = delete;
   SchedulerDelegateImpl &operator=(const SchedulerDelegateImpl &) = delete;
+
+  // Enable/disable Android-style transaction accumulation (for testing)
+  void setAndroidStyleTransactionAccumulation(bool enabled);
+
+  // Set test hook called after pullTransaction, before acquiring lock
+  void setTransactionPauseHook(std::function<void()> hook);
+  void clearTransactionPauseHook();
 
  private:
   void schedulerDidFinishTransaction(const std::shared_ptr<const MountingCoordinator> &mountingCoordinator) override;
@@ -48,6 +60,16 @@ class SchedulerDelegateImpl : public SchedulerDelegate {
   void schedulerDidUpdateShadowTree(const std::unordered_map<Tag, folly::dynamic> &tagToProps) override;
 
   std::shared_ptr<IMountingManager> mountingManager_;
+
+  // Android-style pending transaction mechanism (opt-in for testing)
+  std::mutex pendingTransactionsMutex_;
+  std::vector<MountingTransaction> pendingTransactions_;
+
+  // Test hook - called after pullTransaction, before acquiring lock
+  std::function<void()> transactionPauseHook_;
+
+  // Enable Android-style behavior for testing (default: false)
+  bool useAndroidStyleTransactionAccumulation_ = false;
 };
 
 }; // namespace facebook::react

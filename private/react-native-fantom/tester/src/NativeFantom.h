@@ -14,12 +14,16 @@
 #include <react/renderer/core/ReactPrimitives.h>
 #include <react/renderer/core/ShadowNode.h>
 #include <react/renderer/graphics/Point.h>
+#include <react/threading/TaskDispatchThread.h>
+#include <mutex>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace facebook::react {
 
 class TesterAppDelegate;
+class SchedulerDelegateImpl;
 
 using NativeFantomGetRenderedOutputRenderFormatOptions = NativeFantomRenderFormatOptions<
     // includeRoot
@@ -141,9 +145,33 @@ class NativeFantom : public NativeFantomCxxSpec<NativeFantom> {
   void clearImage(jsi::Runtime &rt, const std::string &uri);
   void clearAllImages(jsi::Runtime &rt);
 
+  // Threading support for race condition testing
+  jsi::Object createWorkerThread(jsi::Runtime &runtime, const std::string &threadName);
+  void scheduleOnThread(jsi::Runtime &runtime, const std::string &threadId, jsi::Function callback);
+  void threadBarrier(jsi::Runtime &runtime, const std::vector<std::string> &threadIds);
+  void destroyWorkerThread(jsi::Runtime &runtime, const std::string &threadId);
+
+  // SchedulerDelegate configuration for race condition testing
+  void setSchedulerDelegate(std::shared_ptr<SchedulerDelegateImpl> delegate);
+  void enableAndroidStyleTransactionAccumulation(jsi::Runtime &runtime, bool enabled);
+  void setTransactionPauseHook(jsi::Runtime &runtime, jsi::Function hook);
+  void clearTransactionPauseHook(jsi::Runtime &runtime);
+
+  // TestCounter state update for testing
+  void updateTestCounterState(jsi::Runtime &runtime, std::shared_ptr<const ShadowNode> shadowNode);
+
  private:
   TesterAppDelegate &appDelegate_;
   SurfaceId nextSurfaceId_ = 1;
+
+  // Worker threads for testing race conditions
+  std::unordered_map<std::string, std::shared_ptr<TaskDispatchThread>> workerThreads_;
+  std::mutex workerThreadsMutex_;
+  int nextThreadId_ = 1;
+
+  // SchedulerDelegate for configuring Android-style behavior
+  std::weak_ptr<SchedulerDelegateImpl> schedulerDelegate_;
+  std::shared_ptr<jsi::Function> transactionPauseHookJSFunction_;
 };
 
 } // namespace facebook::react

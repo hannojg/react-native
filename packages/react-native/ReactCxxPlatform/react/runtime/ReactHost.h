@@ -90,6 +90,8 @@ class ReactHost {
 
   void emitDeviceEvent(folly::dynamic &&args);
 
+  SchedulerDelegate* getSchedulerDelegate() const noexcept;
+
  private:
   void createReactInstance();
   void destroyReactInstance();

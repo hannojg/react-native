@@ -24,6 +24,7 @@ namespace facebook::react {
 class ReactHost;
 class StubQueue;
 class RunLoopObserverManager;
+class SchedulerDelegate;
 
 class TesterAppDelegate {
  public:
@@ -62,6 +63,8 @@ class TesterAppDelegate {
   bool hasPendingTasksInMessageQueue();
 
   std::vector<std::string> getConsoleLogs();
+
+  SchedulerDelegate* getSchedulerDelegate() const;
 
   std::unique_ptr<ReactHost> reactHost_;
   std::weak_ptr<StubQueue> queue_;

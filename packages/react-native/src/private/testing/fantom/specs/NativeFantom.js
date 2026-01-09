@@ -129,6 +129,17 @@ interface Spec extends TurboModule {
   setImageResponse(uri: string, imageResponse: ImageResponse): void;
   clearImage(uri: string): void;
   clearAllImages(): void;
+  // Threading support for race condition testing
+  createWorkerThread: (threadName: string) => {threadId: string};
+  scheduleOnThread: (threadId: string, callback: () => void) => void;
+  threadBarrier: (threadIds: Array<string>) => void;
+  destroyWorkerThread: (threadId: string) => void;
+  // SchedulerDelegate configuration for race condition testing
+  enableAndroidStyleTransactionAccumulation: (enabled: boolean) => void;
+  setTransactionPauseHook: (hook: () => void) => void;
+  clearTransactionPauseHook: () => void;
+  // TestCounter state update for testing
+  updateTestCounterState: (shadowNode: unknown /* ShadowNode */) => void;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>(

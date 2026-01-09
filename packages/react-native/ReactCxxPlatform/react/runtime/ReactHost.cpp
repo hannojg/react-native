@@ -463,4 +463,8 @@ void ReactHost::emitDeviceEvent(folly::dynamic&& args) {
   }
 }
 
+SchedulerDelegate* ReactHost::getSchedulerDelegate() const noexcept {
+  return schedulerDelegate_.get();
+}
+
 } // namespace facebook::react

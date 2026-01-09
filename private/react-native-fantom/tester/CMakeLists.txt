@@ -85,6 +85,7 @@ add_react_common_subdir(react/renderer/components/legacyviewmanagerinterop)
 add_react_common_subdir(react/renderer/components/modal)
 add_react_common_subdir(react/renderer/components/root)
 add_react_common_subdir(react/renderer/components/scrollview)
+add_react_common_subdir(react/renderer/components/testcounter)
 add_react_common_subdir(react/renderer/components/text)
 add_react_common_subdir(react/renderer/components/view)
 add_react_common_subdir(react/renderer/consistency)
@@ -221,6 +222,7 @@ target_link_libraries(fantom_tester
     rrc_scrollview
     rrc_text
     rrc_view
+    react_renderer_components_testcounter
     runtimeexecutor
     yogacore
 

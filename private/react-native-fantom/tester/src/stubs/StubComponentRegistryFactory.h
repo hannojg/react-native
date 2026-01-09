@@ -12,10 +12,12 @@
 #include <react/renderer/components/image/ImageComponentDescriptor.h>
 #include <react/renderer/components/modal/ModalHostViewComponentDescriptor.h>
 #include <react/renderer/components/scrollview/ScrollViewComponentDescriptor.h>
+#include <react/renderer/components/testcounter/TestCounterShadowNode.h>
 #include <react/renderer/components/text/ParagraphComponentDescriptor.h>
 #include <react/renderer/components/text/RawTextComponentDescriptor.h>
 #include <react/renderer/components/text/TextComponentDescriptor.h>
 #include <react/renderer/components/view/ViewComponentDescriptor.h>
+#include <react/renderer/core/ConcreteComponentDescriptor.h>
 
 namespace facebook::react {
 
@@ -29,6 +31,7 @@ inline ComponentRegistryFactory getDefaultComponentRegistryFactory()
       providerRegistry->add(concreteComponentDescriptorProvider<ParagraphComponentDescriptor>());
       providerRegistry->add(concreteComponentDescriptorProvider<ScrollViewComponentDescriptor>());
       providerRegistry->add(concreteComponentDescriptorProvider<RawTextComponentDescriptor>());
+      providerRegistry->add(concreteComponentDescriptorProvider<ConcreteComponentDescriptor<TestCounterShadowNode>>());
       providerRegistry->add(concreteComponentDescriptorProvider<TextComponentDescriptor>());
       providerRegistry->add(concreteComponentDescriptorProvider<ViewComponentDescriptor>());
       providerRegistry->add(concreteComponentDescriptorProvider<ModalHostViewComponentDescriptor>());

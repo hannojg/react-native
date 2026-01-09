@@ -13,6 +13,9 @@
 #include <react/debug/flags.h>
 #include <react/renderer/components/modal/ModalHostViewShadowNode.h>
 #include <react/renderer/components/scrollview/ScrollViewShadowNode.h>
+#include <react/renderer/components/testcounter/TestCounterShadowNode.h>
+#include <react/renderer/core/ConcreteState.h>
+#include <react/renderer/scheduler/SchedulerDelegateImpl.h>
 #include <react/renderer/uimanager/UIManagerBinding.h>
 #include <fstream>
 #include <iostream>
@@ -314,6 +317,205 @@ void NativeFantom::clearImage(jsi::Runtime& /*rt*/, const std::string& uri) {
 
 void NativeFantom::clearAllImages(jsi::Runtime& /*rt*/) {
   appDelegate_.mountingManager_->imageLoader_->clearAllImages();
+}
+
+// Threading support for race condition testing
+
+jsi::Object NativeFantom::createWorkerThread(
+    jsi::Runtime& runtime,
+    const std::string& threadName) {
+  std::lock_guard<std::mutex> lock(workerThreadsMutex_);
+
+  // Generate unique thread ID
+  std::string threadId = "worker_" + std::to_string(nextThreadId_++);
+
+  // Create TaskDispatchThread with the given name
+  auto thread = std::make_shared<TaskDispatchThread>(threadName);
+  workerThreads_[threadId] = thread;
+
+  // Return object with threadId
+  auto result = jsi::Object(runtime);
+  result.setProperty(runtime, "threadId", jsi::String::createFromUtf8(runtime, threadId));
+  return result;
+}
+
+void NativeFantom::scheduleOnThread(
+    jsi::Runtime& runtime,
+    const std::string& threadId,
+    jsi::Function callback) {
+  std::shared_ptr<TaskDispatchThread> thread;
+  {
+    std::lock_guard<std::mutex> lock(workerThreadsMutex_);
+    auto it = workerThreads_.find(threadId);
+    if (it == workerThreads_.end()) {
+      throw jsi::JSError(runtime, "Worker thread not found: " + threadId);
+    }
+    thread = it->second;
+  }
+
+  // Capture the callback as a shared pointer to keep it alive
+  auto sharedCallback = std::make_shared<jsi::Function>(std::move(callback));
+  auto& runtimeRef = runtime;
+
+  // Schedule the task on the worker thread
+  thread->runAsync([sharedCallback, &runtimeRef]() {
+    // Call the JavaScript function on the worker thread
+    sharedCallback->call(runtimeRef);
+  });
+}
+
+void NativeFantom::threadBarrier(
+    jsi::Runtime& runtime,
+    const std::vector<std::string>& threadIds) {
+  for (const auto& threadId : threadIds) {
+    std::shared_ptr<TaskDispatchThread> thread;
+    {
+      std::lock_guard<std::mutex> lock(workerThreadsMutex_);
+      auto it = workerThreads_.find(threadId);
+      if (it == workerThreads_.end()) {
+        throw jsi::JSError(runtime, "Worker thread not found: " + threadId);
+      }
+      thread = it->second;
+    }
+
+    // Use runSync with empty task to wait for thread's queue to drain
+    thread->runSync([]() {});
+  }
+}
+
+void NativeFantom::destroyWorkerThread(
+    jsi::Runtime& runtime,
+    const std::string& threadId) {
+  std::shared_ptr<TaskDispatchThread> thread;
+  {
+    std::lock_guard<std::mutex> lock(workerThreadsMutex_);
+    auto it = workerThreads_.find(threadId);
+    if (it == workerThreads_.end()) {
+      throw jsi::JSError(runtime, "Worker thread not found: " + threadId);
+    }
+    thread = it->second;
+    workerThreads_.erase(it);
+  }
+
+  // Quit the thread (this will join it)
+  thread->quit();
+}
+
+// SchedulerDelegate configuration for race condition testing
+
+void NativeFantom::setSchedulerDelegate(std::shared_ptr<SchedulerDelegateImpl> delegate) {
+  schedulerDelegate_ = delegate;
+}
+
+void NativeFantom::enableAndroidStyleTransactionAccumulation(
+    jsi::Runtime& runtime,
+    bool enabled) {
+  // Try to get from stored weak_ptr first
+  auto delegate = schedulerDelegate_.lock();
+
+  // If not set, get from TesterAppDelegate
+  if (!delegate) {
+    auto* schedulerDelegate = appDelegate_.getSchedulerDelegate();
+    if (schedulerDelegate) {
+      auto* delegateImpl = dynamic_cast<SchedulerDelegateImpl*>(schedulerDelegate);
+      if (delegateImpl) {
+        // We can't store raw pointers in weak_ptr, but we can call directly
+        delegateImpl->setAndroidStyleTransactionAccumulation(enabled);
+        return;
+      }
+    }
+  }
+
+  if (!delegate) {
+    throw jsi::JSError(runtime, "SchedulerDelegate not available");
+  }
+  delegate->setAndroidStyleTransactionAccumulation(enabled);
+}
+
+void NativeFantom::setTransactionPauseHook(
+    jsi::Runtime& runtime,
+    jsi::Function hook) {
+  // Try to get from stored weak_ptr first
+  auto delegate = schedulerDelegate_.lock();
+
+  // If not set, get from TesterAppDelegate
+  SchedulerDelegateImpl* delegateImpl = nullptr;
+  if (!delegate) {
+    auto* schedulerDelegate = appDelegate_.getSchedulerDelegate();
+    if (schedulerDelegate) {
+      delegateImpl = dynamic_cast<SchedulerDelegateImpl*>(schedulerDelegate);
+    }
+  } else {
+    delegateImpl = delegate.get();
+  }
+
+  if (!delegateImpl) {
+    throw jsi::JSError(runtime, "SchedulerDelegate not available");
+  }
+
+  // Store the JS function to keep it alive
+  transactionPauseHookJSFunction_ = std::make_shared<jsi::Function>(std::move(hook));
+  auto& runtimeRef = runtime;
+
+  // Set the C++ hook that calls the JS function
+  delegateImpl->setTransactionPauseHook([this, &runtimeRef]() {
+    if (transactionPauseHookJSFunction_) {
+      transactionPauseHookJSFunction_->call(runtimeRef);
+    }
+  });
+}
+
+void NativeFantom::clearTransactionPauseHook(jsi::Runtime& runtime) {
+  // Try to get from stored weak_ptr first
+  auto delegate = schedulerDelegate_.lock();
+
+  // If not set, get from TesterAppDelegate
+  SchedulerDelegateImpl* delegateImpl = nullptr;
+  if (!delegate) {
+    auto* schedulerDelegate = appDelegate_.getSchedulerDelegate();
+    if (schedulerDelegate) {
+      delegateImpl = dynamic_cast<SchedulerDelegateImpl*>(schedulerDelegate);
+    }
+  } else {
+    delegateImpl = delegate.get();
+  }
+
+  if (!delegateImpl) {
+    throw jsi::JSError(runtime, "SchedulerDelegate not available");
+  }
+
+  delegateImpl->clearTransactionPauseHook();
+  transactionPauseHookJSFunction_ = nullptr;
+}
+
+// TestCounter state update for testing
+
+void NativeFantom::updateTestCounterState(
+    jsi::Runtime& runtime,
+    std::shared_ptr<const ShadowNode> shadowNode) {
+  auto testCounterShadowNode =
+      std::dynamic_pointer_cast<const TestCounterShadowNode>(shadowNode);
+  if (!testCounterShadowNode) {
+    throw jsi::JSError(runtime, "Node is not a TestCounter component");
+  }
+
+  auto state = testCounterShadowNode->getState();
+  if (!state) {
+    throw jsi::JSError(runtime, "TestCounter has no state");
+  }
+
+  // Cast to ConcreteState to access getData() and updateState()
+  auto concreteState = std::static_pointer_cast<const ConcreteState<TestCounterState>>(state);
+
+  // Get current counter value and increment it
+  int currentCounter = concreteState->getData().counter;
+  int newCounter = currentCounter + 1;
+
+  // Trigger state update via the state object itself
+  concreteState->updateState(
+      [newCounter](const TestCounterState& /*oldData*/) -> std::shared_ptr<const TestCounterState> {
+        return std::make_shared<const TestCounterState>(newCounter);
+      });
 }
 
 } // namespace facebook::react

@@ -277,4 +277,11 @@ std::vector<std::string> TesterAppDelegate::getConsoleLogs() {
   return consoleLogs_;
 }
 
+SchedulerDelegate* TesterAppDelegate::getSchedulerDelegate() const {
+  if (reactHost_) {
+    return reactHost_->getSchedulerDelegate();
+  }
+  return nullptr;
+}
+
 } // namespace facebook::react
