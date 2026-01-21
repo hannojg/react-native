@@ -11,4 +11,9 @@ public class ReactNativeFeatureFlagsOverrides_RNOSS_Stable_Android() :
     ReactNativeNewArchitectureFeatureFlagsDefaults() {
 
   override fun useFabricInterop(): Boolean = true
+
+  // enable props 2.0 diffing mechanism
+  override fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = true;
+  override fun enablePropsUpdateReconciliationAndroid(): Boolean = true
+  override fun enableExclusivePropsUpdateAndroid(): Boolean = true
 }
