@@ -112,6 +112,7 @@ export default function MyNativeView(props: {}): React.Node {
   const [legacyMeasureLayout, setLegacyMeasureLayout] =
     useState<MeasureStruct>(MeasureStructZero);
   const [legacyStyleEventCount, setLegacyStyleEventCount] = useState<number>(0);
+  const [testFloat, setTestFloat] = useState<number>(undefined);
 
   return (
     <View ref={containerRef} style={{flex: 1}}>
@@ -121,6 +122,7 @@ export default function MyNativeView(props: {}): React.Node {
         style={{flex: 1}}
         opacity={opacity}
         values={arrayValues}
+        testFloatNullable={testFloat}
         onIntArrayChanged={event => {
           console.log(event.nativeEvent.values);
           console.log(event.nativeEvent.boolValues);
@@ -176,6 +178,14 @@ export default function MyNativeView(props: {}): React.Node {
           flexWrap: 'wrap',
           justifyContent: 'space-between',
         }}>
+        <Button
+          title="Change test float"
+          onPress={() => {
+            let newTestFloat =
+              testFloat === null || testFloat === undefined ? 0.1 : null;
+            setTestFloat(newTestFloat);
+          }}
+        />
         <Button
           title="Change Background"
           onPress={() => {

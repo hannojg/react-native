@@ -8,6 +8,7 @@
 package com.facebook.react.uiapp.component
 
 import android.graphics.Color
+import android.widget.Toast
 import androidx.annotation.ColorInt
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.module.annotations.ReactModule
@@ -63,6 +64,14 @@ internal class MyNativeViewManager :
     val values = mutableListOf<Int>()
     value?.toArrayList()?.forEach { values.add((it as Double).toInt()) }
     view.emitOnArrayChangedEvent(values)
+  }
+
+//  @ReactProp(name = "testFloatNullable")
+  override fun setTestFloatNullable(
+    view: MyNativeView,
+    value: Float?
+  ) {
+    Toast.makeText(view.context, "testFloatNullable: $value", Toast.LENGTH_SHORT).show()
   }
 
   override fun setBackgroundColor(view: MyNativeView, @ColorInt backgroundColor: Int) {

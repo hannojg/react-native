@@ -8,7 +8,7 @@
  * @format
  */
 
-import type {CodegenTypes, HostComponent, ViewProps} from 'react-native';
+import {CodegenTypes, HostComponent, ViewProps} from 'react-native';
 
 import * as React from 'react';
 import {codegenNativeCommands, codegenNativeComponent} from 'react-native';
@@ -32,6 +32,7 @@ type NativeProps = Readonly<{
   ...ViewProps,
   opacity?: CodegenTypes.Float,
   values: ReadonlyArray<CodegenTypes.Int32>,
+  testFloatNullable?: WithDefault<CodegenTypes.Float, null>,
 
   // Events
   onIntArrayChanged?: ?CodegenTypes.BubblingEventHandler<Event>,
