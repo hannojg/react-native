@@ -32,4 +32,8 @@ public open class ReactNativeNewArchitectureFeatureFlagsDefaults() :
   override fun useTurboModuleInterop(): Boolean = true
 
   override fun useTurboModules(): Boolean = true
+
+  override fun enableAccumulatedUpdatesInRawPropsAndroid(): Boolean = true
+  override fun enableExclusivePropsUpdateAndroid(): Boolean = true
+  override fun enablePropsUpdateReconciliationAndroid(): Boolean = true
 }

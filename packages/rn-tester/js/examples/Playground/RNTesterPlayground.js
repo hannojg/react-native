@@ -12,14 +12,29 @@ import type {RNTesterModuleExample} from '../../types/RNTesterTypes';
 
 import RNTesterText from '../../components/RNTesterText';
 import * as React from 'react';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet, View, Button} from 'react-native';
 
 function Playground() {
+  const [shouldSetStyle, setShouldSetStyle] = React.useState(true);
+
   return (
     <View style={styles.container}>
-      <RNTesterText>
-        Edit "RNTesterPlayground.js" to change this file
-      </RNTesterText>
+      <Button title="Toggle Style" onPress={() => setShouldSetStyle(!shouldSetStyle)} />
+      <View
+        style={[
+          shouldSetStyle
+            ? {
+                borderStyle: 'dashed',
+                borderWidth: 2,
+              }
+            : undefined,
+          {
+            height: 40,
+            width: 40,
+            backgroundColor: 'blue',
+          },
+        ]}
+      />
     </View>
   );
 }
