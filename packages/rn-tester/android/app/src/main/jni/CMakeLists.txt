@@ -13,6 +13,14 @@ include(${REACT_ANDROID_DIR}/cmake-utils/ReactNative-application.cmake)
 add_subdirectory(${REACT_COMMON_DIR}/react/nativemodule/samples/platform/android/ sampleturbomodule_build)
 add_subdirectory(${REACT_COMMON_DIR}/../../rn-tester/NativeCxxModuleExample/ nativecxxmoduleexample_build)
 
+target_sources(${CMAKE_PROJECT_NAME}
+        PRIVATE
+        ${REACT_COMMON_DIR}/../../rn-tester/NativeComponentExample/common/cpp/react/renderer/components/memoryheavy/RNTMemoryHeavyNativeViewShadowNode.cpp)
+
+target_include_directories(${CMAKE_PROJECT_NAME}
+        PRIVATE
+        ${REACT_COMMON_DIR}/../../rn-tester/NativeComponentExample/common/cpp)
+
 # RN Tester needs to link against the sample turbomobule
 target_link_libraries(${CMAKE_PROJECT_NAME}
         sampleturbomodule)

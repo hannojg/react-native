@@ -51,6 +51,9 @@
       "components": {
         "RNTMyNativeView": {
           "className": "RNTMyNativeViewComponentView"
+        },
+        "RNTMemoryHeavyNativeView": {
+          "className": "RNTMemoryHeavyNativeViewComponentView"
         }
       }
     }

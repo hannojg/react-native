@@ -25,6 +25,7 @@ import com.facebook.react.common.assets.ReactFontManager
 import com.facebook.react.defaults.DefaultReactHost
 import com.facebook.react.module.model.ReactModuleInfo
 import com.facebook.react.module.model.ReactModuleInfoProvider
+import com.facebook.react.uiapp.component.MemoryHeavyNativeViewManager
 import com.facebook.react.uiapp.component.MyLegacyViewManager
 import com.facebook.react.uiapp.component.MyNativeViewManager
 import com.facebook.react.uiapp.component.ReportFullyDrawnViewManager
@@ -80,6 +81,7 @@ internal class RNTesterApplication : Application(), ReactApplication {
                   object : ReactPackage, ViewManagerOnDemandReactPackage {
                     override fun getViewManagerNames(reactContext: ReactApplicationContext) =
                         listOf(
+                            "RNTMemoryHeavyNativeView",
                             "RNTMyNativeView",
                             "RNTMyLegacyNativeView",
                             "RNTReportFullyDrawnView",
@@ -89,6 +91,7 @@ internal class RNTesterApplication : Application(), ReactApplication {
                         reactContext: ReactApplicationContext
                     ): List<ViewManager<*, *>> =
                         listOf(
+                            MemoryHeavyNativeViewManager(),
                             MyNativeViewManager(),
                             MyLegacyViewManager(reactContext),
                             ReportFullyDrawnViewManager(),
@@ -99,6 +102,7 @@ internal class RNTesterApplication : Application(), ReactApplication {
                         viewManagerName: String,
                     ): ViewManager<*, out ReactShadowNode<*>>? =
                         when (viewManagerName) {
+                          "RNTMemoryHeavyNativeView" -> MemoryHeavyNativeViewManager()
                           "RNTMyNativeView" -> MyNativeViewManager()
                           "RNTMyLegacyNativeView" -> MyLegacyViewManager(reactContext)
                           "RNTReportFullyDrawnView" -> ReportFullyDrawnViewManager()

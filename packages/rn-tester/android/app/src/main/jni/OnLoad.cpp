@@ -13,6 +13,7 @@
 #include <ReactCommon/SampleTurboModuleSpec.h>
 #include <fbjni/fbjni.h>
 #include <react/renderer/componentregistry/ComponentDescriptorProviderRegistry.h>
+#include <react/renderer/components/memoryheavy/RNTMemoryHeavyNativeViewComponentDescriptor.h>
 
 #ifdef REACT_NATIVE_APP_CODEGEN_HEADER
 #include REACT_NATIVE_APP_CODEGEN_HEADER
@@ -25,6 +26,9 @@ namespace facebook::react {
 
 void registerComponents(
     std::shared_ptr<const ComponentDescriptorProviderRegistry> registry) {
+  registry->add(
+      concreteComponentDescriptorProvider<
+          RNTMemoryHeavyNativeViewReproComponentDescriptor>());
 #ifdef REACT_NATIVE_APP_COMPONENT_REGISTRATION
   REACT_NATIVE_APP_COMPONENT_REGISTRATION(registry);
 #endif
