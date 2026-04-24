@@ -9,6 +9,7 @@
 
 #include <limits>
 #include <memory>
+#include <cstddef>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -174,6 +175,13 @@ class ShadowNode : public Sealable, public DebugStringConvertible, public jsi::N
 
   ShadowNodeFamily::Shared getFamilyShared() const;
 
+  /*
+   * Returns the amount of native memory retained by this shadow node that is
+   * useful to report back to JS runtimes as external memory pressure.
+   * Subclasses that retain additional heap memory should override this.
+   */
+  virtual size_t getExternalMemoryPressureSize() const;
+
 #pragma mark - Mutating Methods
 
   virtual void appendChild(const std::shared_ptr<const ShadowNode> &child);
@@ -288,7 +296,7 @@ class ShadowNode : public Sealable, public DebugStringConvertible, public jsi::N
 static_assert(std::has_virtual_destructor<ShadowNode>::value, "ShadowNode must have a virtual destructor");
 
 struct ShadowNodeWrapper : public jsi::NativeState {
-  explicit ShadowNodeWrapper(std::shared_ptr<const ShadowNode> shadowNode) : shadowNode(std::move(shadowNode)) {}
+  explicit ShadowNodeWrapper(std::shared_ptr<const ShadowNode> shadowNode);
 
   // The below method needs to be implemented out-of-line in order for the class
   // to have at least one "key function" (see
@@ -297,5 +305,8 @@ struct ShadowNodeWrapper : public jsi::NativeState {
 
   std::shared_ptr<const ShadowNode> shadowNode;
 };
+
+size_t getShadowNodeExternalMemoryPressureForJSExport(
+    const std::shared_ptr<const ShadowNode>& shadowNode);
 
 } // namespace facebook::react

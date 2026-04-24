@@ -10,14 +10,83 @@
 
 #include <react/debug/react_native_assert.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <logger/react_native_log.h>
 #include <react/renderer/core/ComponentDescriptor.h>
 #include <react/renderer/core/ShadowNodeFragment.h>
 #include <react/renderer/debug/DebugStringConvertible.h>
 #include <react/renderer/debug/debugStringConvertibleUtils.h>
 
+#include <atomic>
+#include <cstring>
+#include <cstdio>
 #include <utility>
 
 namespace facebook::react {
+
+namespace {
+
+std::atomic<int> gActiveShadowNodeWrappers{0};
+constexpr const char* kMemoryHeavyReproComponentName =
+    "RNTMemoryHeavyNativeView";
+
+bool isMemoryHeavyReproShadowNode(const ShadowNode* shadowNode) {
+  return shadowNode != nullptr &&
+      std::strcmp(
+          shadowNode->getComponentName(),
+          kMemoryHeavyReproComponentName) == 0;
+}
+
+void logShadowNodeWrapperEvent(
+    const char* eventName,
+    const void* wrapper,
+    const std::shared_ptr<const ShadowNode>& shadowNode,
+    int activeWrappers) {
+  if (!isMemoryHeavyReproShadowNode(shadowNode.get())) {
+    return;
+  }
+
+  char buffer[256];
+  std::snprintf(
+      buffer,
+      sizeof(buffer),
+      "ShadowNodeWrapper %s wrapper=%p node=%p family=%p tag=%d active=%d",
+      eventName,
+      wrapper,
+      shadowNode.get(),
+      shadowNode ? shadowNode->getFamilyShared().get() : nullptr,
+      shadowNode ? shadowNode->getTag() : -1,
+      activeWrappers);
+  react_native_log_info(buffer);
+}
+
+void logRuntimeShadowNodeReferenceEvent(
+    const char* eventName,
+    const ShadowNode& sourceShadowNode,
+    const void* wrapper,
+    const std::shared_ptr<const ShadowNode>& destinationShadowNode) {
+  if (!isMemoryHeavyReproShadowNode(&sourceShadowNode) &&
+      !isMemoryHeavyReproShadowNode(destinationShadowNode.get())) {
+    return;
+  }
+
+  char buffer[320];
+  std::snprintf(
+      buffer,
+      sizeof(buffer),
+      "ShadowNode %s sourceNode=%p sourceFamily=%p sourceTag=%d wrapper=%p destinationNode=%p destinationFamily=%p destinationTag=%d",
+      eventName,
+      &sourceShadowNode,
+      sourceShadowNode.getFamilyShared().get(),
+      sourceShadowNode.getTag(),
+      wrapper,
+      destinationShadowNode.get(),
+      destinationShadowNode ? destinationShadowNode->getFamilyShared().get()
+                            : nullptr,
+      destinationShadowNode ? destinationShadowNode->getTag() : -1);
+  react_native_log_info(buffer);
+}
+
+} // namespace
 
 /*
  * Runtime shadow node reference updates should only run from one thread at all
@@ -220,6 +289,16 @@ int ShadowNode::getOrderIndex() const {
   return orderIndex_;
 }
 
+size_t ShadowNode::getExternalMemoryPressureSize() const {
+  return sizeof(*this);
+}
+
+size_t getShadowNodeExternalMemoryPressureForJSExport(
+    const std::shared_ptr<const ShadowNode>& shadowNode) {
+  return sizeof(ShadowNodeWrapper) +
+      (shadowNode == nullptr ? 0 : shadowNode->getExternalMemoryPressureSize());
+}
+
 void ShadowNode::sealRecursive() const {
   if (getSealed()) {
     return;
@@ -256,7 +335,7 @@ void ShadowNode::replaceChild(
 
   cloneChildrenIfShared();
   newChild->family_->setParent(family_);
-
+  
   auto& children =
       const_cast<std::vector<std::shared_ptr<const ShadowNode>>&>(*children_);
   auto size = children.size();
@@ -329,11 +408,22 @@ void ShadowNode::setRuntimeShadowNodeReference(
     const std::shared_ptr<ShadowNodeWrapper>& runtimeShadowNodeReference)
     const {
   runtimeShadowNodeReference_ = runtimeShadowNodeReference;
+  logRuntimeShadowNodeReferenceEvent(
+      "setRuntimeShadowNodeReference",
+      *this,
+      runtimeShadowNodeReference.get(),
+      runtimeShadowNodeReference ? runtimeShadowNodeReference->shadowNode
+                                 : nullptr);
 }
 
 void ShadowNode::updateRuntimeShadowNodeReference(
     const std::shared_ptr<const ShadowNode>& destinationShadowNode) const {
   if (auto reference = runtimeShadowNodeReference_.lock()) {
+    logRuntimeShadowNodeReferenceEvent(
+        "updateRuntimeShadowNodeReference",
+        *this,
+        reference.get(),
+        destinationShadowNode);
     reference->shadowNode = destinationShadowNode;
   }
 }
@@ -518,6 +608,21 @@ SharedDebugStringConvertibleList ShadowNode::getDebugProps() const {
 // a "key function" for the ShadowNodeWrapper class -- this allows for RTTI to
 // work properly across dynamic library boundaries (i.e. dynamic_cast that is
 // used by getNativeState method)
-ShadowNodeWrapper::~ShadowNodeWrapper() = default;
+ShadowNodeWrapper::ShadowNodeWrapper(std::shared_ptr<const ShadowNode> shadowNode)
+    : shadowNode(std::move(shadowNode)) {
+  logShadowNodeWrapperEvent(
+      "constructed",
+      this,
+      this->shadowNode,
+      gActiveShadowNodeWrappers.fetch_add(1, std::memory_order_relaxed) + 1);
+}
+
+ShadowNodeWrapper::~ShadowNodeWrapper() {
+  logShadowNodeWrapperEvent(
+      "destructing",
+      this,
+      shadowNode,
+      gActiveShadowNodeWrappers.fetch_sub(1, std::memory_order_relaxed) - 1);
+}
 
 } // namespace facebook::react

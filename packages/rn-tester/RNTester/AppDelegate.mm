@@ -56,6 +56,8 @@ static NSString *kBundlePath = @"js/RNTesterApp.ios";
   self.dependencyProvider = [RCTAppDependencyProvider new];
 #endif
 
+  [RCTBundleURLProvider sharedSettings].jsLocation = @"10.0.0.228:8082";
+
 #if RCT_DEV_MENU
 
   RCTDevMenuConfiguration *devMenuConfiguration = [[RCTDevMenuConfiguration alloc] initWithDevMenuEnabled:true

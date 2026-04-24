@@ -16,7 +16,7 @@
   },
   "main": "./src/index.flow.js",
   "exports": {
-    ".": "./src/index.js",
+    ".": "./src/index.flow.js",
     "./package.json": "./package.json",
     "./version.js": "./src/public/version.js"
   },

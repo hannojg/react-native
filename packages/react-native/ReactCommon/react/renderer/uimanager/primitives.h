@@ -45,6 +45,10 @@ inline static jsi::Value valueFromShadowNode(
   }
 
   jsi::Object obj(runtime);
+  obj.setExternalMemoryPressure(
+      runtime,
+      getShadowNodeExternalMemoryPressureForJSExport(
+          wrappedShadowNode->shadowNode));
   obj.setNativeState(runtime, std::move(wrappedShadowNode));
   return obj;
 }

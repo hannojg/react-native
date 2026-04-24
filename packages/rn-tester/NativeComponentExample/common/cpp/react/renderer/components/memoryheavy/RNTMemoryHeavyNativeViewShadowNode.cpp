@@ -8,7 +8,11 @@
 #include "RNTMemoryHeavyNativeViewShadowNode.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cstddef>
+#include <cstdio>
+
+#include <logger/react_native_log.h>
 
 namespace facebook::react {
 
@@ -16,6 +20,26 @@ namespace {
 
 constexpr std::size_t kBytesPerMegabyte = 1024 * 1024;
 constexpr std::size_t kPageSize = 4096;
+std::atomic<int> gActiveShadowNodeInstances{0};
+
+void logShadowNodeLifecycleEvent(
+    const char* eventName,
+    const RNTMemoryHeavyNativeViewReproShadowNode& shadowNode,
+    int activeInstances)
+{
+  char buffer[256];
+  std::snprintf(
+      buffer,
+      sizeof(buffer),
+      "RNTMemoryHeavyNativeViewReproShadowNode %s this=%p family=%p tag=%d heap=%zu active=%d",
+      eventName,
+      &shadowNode,
+      shadowNode.getFamilyShared().get(),
+      shadowNode.getTag(),
+      shadowNode.getExternalMemoryPressureSize(),
+      activeInstances);
+  react_native_log_info(buffer);
+}
 
 std::size_t getRequestedAllocationSize(int allocationSizeMb)
 {
@@ -32,6 +56,10 @@ RNTMemoryHeavyNativeViewReproShadowNode::RNTMemoryHeavyNativeViewReproShadowNode
     : BaseShadowNode(fragment, family, traits)
 {
   allocateHeapBuffer();
+  logShadowNodeLifecycleEvent(
+      "constructed",
+      *this,
+      gActiveShadowNodeInstances.fetch_add(1, std::memory_order_relaxed) + 1);
 }
 
 RNTMemoryHeavyNativeViewReproShadowNode::RNTMemoryHeavyNativeViewReproShadowNode(
@@ -40,6 +68,23 @@ RNTMemoryHeavyNativeViewReproShadowNode::RNTMemoryHeavyNativeViewReproShadowNode
     : BaseShadowNode(sourceShadowNode, fragment)
 {
   allocateHeapBuffer();
+  logShadowNodeLifecycleEvent(
+      "cloned",
+      *this,
+      gActiveShadowNodeInstances.fetch_add(1, std::memory_order_relaxed) + 1);
+}
+
+RNTMemoryHeavyNativeViewReproShadowNode::~RNTMemoryHeavyNativeViewReproShadowNode()
+{
+  logShadowNodeLifecycleEvent(
+      "destructing",
+      *this,
+      gActiveShadowNodeInstances.fetch_sub(1, std::memory_order_relaxed) - 1);
+}
+
+size_t RNTMemoryHeavyNativeViewReproShadowNode::getExternalMemoryPressureSize()
+    const {
+  return sizeof(*this) + heapBuffer_.capacity() * sizeof(std::uint8_t);
 }
 
 void RNTMemoryHeavyNativeViewReproShadowNode::allocateHeapBuffer()

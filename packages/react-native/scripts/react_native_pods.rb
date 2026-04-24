@@ -86,7 +86,7 @@ def use_react_native! (
   # We set RCT_SKIP_CODEGEN to true, if the user wants to skip the running Codegen step from Cocoapods.
   # This is needed as part of our migration away from cocoapods
   ENV['RCT_SKIP_CODEGEN'] = ENV['RCT_SKIP_CODEGEN'] == '1' || ENV['RCT_IGNORE_PODS_DEPRECATION'] == '1' ? '1' : '0'
-
+  
   # Use the React Native precompiled binaries by default.
   # Users can still turn them off and build from source by setting the environment variable to 0.
   ENV['RCT_USE_RN_DEP'] = ENV['RCT_USE_RN_DEP'] == '0' ? '0' : '1'

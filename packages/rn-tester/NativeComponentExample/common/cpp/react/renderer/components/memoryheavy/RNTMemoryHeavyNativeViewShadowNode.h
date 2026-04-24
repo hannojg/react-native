@@ -44,12 +44,16 @@ class RNTMemoryHeavyNativeViewReproShadowNode final
       const ShadowNode& sourceShadowNode,
       const ShadowNodeFragment& fragment);
 
+  ~RNTMemoryHeavyNativeViewReproShadowNode() override;
+
   static ShadowNodeTraits BaseTraits()
   {
     auto traits = BaseShadowNode::BaseTraits();
     traits.set(ShadowNodeTraits::Trait::LeafYogaNode);
     return traits;
   }
+
+  size_t getExternalMemoryPressureSize() const override;
 
  private:
   void allocateHeapBuffer();

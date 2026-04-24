@@ -11,6 +11,7 @@
 #include <jsi/jsilib.h>
 #include <jsinspector-modern/InspectorFlags.h>
 #include <react/featureflags/ReactNativeFeatureFlags.h>
+#include <glog/logging.h>
 
 #ifdef HERMES_ENABLE_DEBUGGER
 #include <hermes/inspector-modern/chrome/Registration.h>
@@ -135,7 +136,19 @@ std::unique_ptr<JSRuntime> HermesInstance::createJSRuntime(
   auto gcConfig = ::hermes::vm::GCConfig::Builder()
                       // Default to 3GB
                       .withMaxHeapSize(3072 << 20)
-                      .withName("RNBridgeless");
+                      .withName("RNBridgeless")
+                      .withAnalyticsCallback(
+                                  [](const ::hermes::vm::GCAnalyticsEvent& event) {
+                                    LOG(INFO)
+                                        << "[Hermes GC] kind=" << event.collectionType
+                                        << " cause=" << event.cause
+                                        << " duration_ms=" << event.duration.count()
+                                        << " heap_before=" << event.size.before
+                                        << " heap_after=" << event.size.after
+                                        << " external_before=" << event.external.before
+                                        << " external_after=" << event.external.after
+                                        << " survival=" << event.survivalRatio;
+                                  });
 
   if (allocInOldGenBeforeTTI) {
     // For the next two arguments: avoid GC before TTI

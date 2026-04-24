@@ -39,7 +39,11 @@ struct Bridging<std::shared_ptr<const ShadowNode>> {
   static jsi::Value toJs(jsi::Runtime &rt, const std::shared_ptr<const ShadowNode> &value)
   {
     jsi::Object obj(rt);
-    obj.setNativeState(rt, std::make_shared<ShadowNodeWrapper>(value));
+    auto shadowNodeWrapper = std::make_shared<ShadowNodeWrapper>(value);
+    obj.setExternalMemoryPressure(
+        rt, getShadowNodeExternalMemoryPressureForJSExport(value));
+    obj.setNativeState(rt, std::move(shadowNodeWrapper));
+
     return obj;
   }
 };

@@ -10025,6 +10025,15 @@ __DEV__ &&
               newProps === renderLanes
                 ? (workInProgress.stateNode = renderLanes)
                 : ((workInProgress.flags |= 8),
+                  shouldLogFabricNodeType(workInProgress.type) &&
+                    logFabricNodeEvent("cloneInstance", {
+                      fiberTag: workInProgress.tag,
+                      type: workInProgress.type,
+                      nativeTag: renderLanes.canonical.nativeTag,
+                      oldNode: renderLanes.node,
+                      newNode: newProps.node,
+                      keepChildren: !current
+                    }),
                   (workInProgress.stateNode = newProps),
                   current &&
                     appendAllChildren(newProps, workInProgress, !1, !1));
@@ -10070,6 +10079,13 @@ __DEV__ &&
               }
             };
             workInProgress.flags |= 8;
+            shouldLogFabricNodeType(workInProgress.type) &&
+              logFabricNodeEvent("createInstance", {
+                fiberTag: workInProgress.tag,
+                type: workInProgress.type,
+                nativeTag: current.canonical.nativeTag,
+                node: current.node
+              });
             appendAllChildren(current, workInProgress, !1, !1);
             workInProgress.stateNode = current;
           }
@@ -11266,6 +11282,17 @@ __DEV__ &&
       var alternate = fiber.alternate;
       null !== alternate &&
         ((fiber.alternate = null), detachFiberAfterEffects(alternate));
+      alternate = fiber.stateNode;
+      shouldLogFabricNodeType(fiber.type) &&
+        null != alternate &&
+        null != alternate.node &&
+        logFabricNodeEvent("detachFiberAfterEffects", {
+          type: fiber.type,
+          fiberTag: fiber.tag,
+          nativeTag:
+            null != alternate.canonical ? alternate.canonical.nativeTag : null,
+          node: alternate.node
+        });
       fiber.child = null;
       fiber.deletions = null;
       fiber.sibling = null;
@@ -15886,6 +15913,15 @@ __DEV__ &&
         "The current renderer does not support Resources. This error is likely caused by a bug in React. Please file an issue."
       );
     }
+    var TRACKED_FABRIC_TYPE = "RNTMemoryHeavyNativeView";
+    function logFabricNodeEvent(event, payload) {
+      try {
+        console.log("[fabric-node]", event, payload);
+      } catch (error) {}
+    }
+    function shouldLogFabricNodeType(type) {
+      return type === TRACKED_FABRIC_TYPE;
+    }
     function createTextInstance(
       text,
       rootContainerInstance,
@@ -15898,7 +15934,7 @@ __DEV__ &&
         );
       hostContext = nextReactTag;
       nextReactTag += 2;
-      return {
+      rootContainerInstance = {
         node: createNode(
           hostContext,
           "RCTRawText",
@@ -15907,6 +15943,7 @@ __DEV__ &&
           internalInstanceHandle
         )
       };
+      return rootContainerInstance;
     }
     function getPublicInstance(instance) {
       if (null != instance.canonical) {
